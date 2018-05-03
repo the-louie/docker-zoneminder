@@ -1,10 +1,10 @@
-FROM lsiobase/ubuntu:xenial
+FROM resin/rpi-raspbian:stretch
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="sparklyballs"
+LABEL build_version="IrisOne version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="the_louie"
 
 # environment variables
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -14,6 +14,7 @@ ENV DATADIR=$MYSQL_DIR/database
 # packages as variables
 ARG BUILD_DEPENDENCIES="\
 	cmake \
+	default-libmysqlclient-dev \
 	dh-autoreconf \
 	dpatch \
 	g++ \
@@ -26,9 +27,8 @@ ARG BUILD_DEPENDENCIES="\
 	libavresample-dev \
 	libavutil-dev \
 	libcurl4-openssl-dev \
-	libjpeg-turbo8-dev \
+	libjpeg-dev \
 	libmp4v2-dev \
-	libmysqlclient-dev \
 	libnetpbm10-dev \
 	libpcre3-dev \
 	libpolkit-gobject-1-dev \
@@ -44,7 +44,11 @@ ARG BUILD_DEPENDENCIES="\
 	libx264-dev \
 	php-dev \
 	php-pear \
-	yasm"
+	yasm \
+	libraspberrypi0 \
+	libraspberrypi-dev \
+	libraspberrypi-doc \
+	libraspberrypi-bin"
 
 ARG RUNTIME_DEPENDENCIES="\
 	apache2 \
@@ -62,7 +66,6 @@ ARG RUNTIME_DEPENDENCIES="\
 	libdbi-perl \
 	libdevice-serialport-perl \
 	libio-socket-multicast-perl \
-	libjpeg-turbo8 \
 	libmime-lite-perl \
 	libmime-perl \
 	libmp4v2-2 \
@@ -75,6 +78,7 @@ ARG RUNTIME_DEPENDENCIES="\
 	libvlc5 \
 	libvlccore8 \
 	libwww-perl \
+	mysql-client \
 	mariadb-client \
 	mariadb-server \
 	net-tools \
@@ -86,12 +90,8 @@ ARG RUNTIME_DEPENDENCIES="\
 	zip"
 
 RUN \
- echo "**** add repositories ****" && \
- apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && \
- echo "deb [arch=amd64,i386] http://mirrors.coreix.net/mariadb/repo/10.1/ubuntu xenial main" >> \
-	/etc/apt/sources.list.d/mariadb.list && \
- echo "deb-src http://mirrors.coreix.net/mariadb/repo/10.1/ubuntu xenial main" >> \
-	/etc/apt/sources.list.d/mariadb.list && \
+ adduser abc && \
+ adduser abc video && \
  echo "**** install packages ****" && \
  apt-get update && \
  apt-get install -y \
@@ -137,11 +137,10 @@ RUN \
 	. && \
  make && \
  make install && \
- echo "**** configure zoneminder exports folder and add abc to video group ****" && \
+ echo "**** configure zoneminder exports folder ****" && \
  sed -i \
 	-e "s#\(ZM_DIR_EXPORTS.*=\).*#\1/data/zoneminder/exports#g" \
 	/etc/zm/conf.d/01-system-paths.conf && \
- adduser abc video && \
  echo "**** configure apache ****" && \
  cp misc/apache.conf /defaults/default.conf && \
  a2enmod cgi rewrite && \
